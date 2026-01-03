@@ -1,0 +1,13 @@
+version: 2
+
+sources:
+  - name: raw
+    database: FHV_DB
+    schema: RAW
+    tables:
+      - name: FHV_TRIPS
+        description: "Raw FHV trip data from TLC (2025)"
+        columns:
+          - name: pickup_datetime
+            tests:
+              - not_null
