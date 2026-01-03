@@ -37,3 +37,8 @@ models:
     marts:
       +materialized: table
       +schema: MARTS
+
+seeds:
+  uber_etl_pipeline:
+    +schema: STAGING
+    +quote_columns: false
