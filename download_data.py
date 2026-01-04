@@ -38,11 +38,22 @@ def main():
 
     # Download CSV file
     csv_url = BASE_URL_CSV
-    csv_local_path = os.path.join("data", "csv", "taxi_zone_lookup.csv")
+    csv_local_path = os.path.join("uber_etl_pipeline", "seeds", "seed_zone_lookup.csv")
     print(f"Downloading {csv_url} to {csv_local_path}")
     download_file(csv_url, csv_local_path)
 
     print("Download completed.")
+    
+    # change the first line of the CSV file to "zone_id,borough,zone,service_zone"
+    try:
+        with open(csv_local_path, 'r') as file:
+            lines = file.readlines()
+        lines[0] = "location_id,borough,zone,service_zone\n"
+        with open(csv_local_path, 'w') as file:
+            file.writelines(lines)
+        print(f"Updated header in {csv_local_path}")
+    except Exception as e:
+        print(f"Error updating CSV header: {e}")
 
 if __name__ == "__main__":
     main()

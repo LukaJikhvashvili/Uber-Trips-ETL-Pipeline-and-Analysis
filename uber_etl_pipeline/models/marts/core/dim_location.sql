@@ -6,8 +6,8 @@
 }}
 
 select
-  location_id,
-  borough,
-  zone,
-  service_zone
+  LocationID as location_id,
+  Borough as borough,
+  Zone as zone,
+  service_zone as service_zone
 from {{ ref('seed_zone_lookup') }}

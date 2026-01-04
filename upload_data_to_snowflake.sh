@@ -11,11 +11,21 @@ STAGE="@fhv_internal_stage"
 
 for file in data/parquet/*/*.parquet; do
   filename=$(basename "$file")
-  
+
   # Check if file name exists in stage
   echo "Checking if $filename exists in stage $STAGE..."
-  exists=$(snowsql -a "$SNOWFLAKE_ACCOUNT" -u "$SNOWFLAKE_USER" -d FHV_DB -s RAW -q "REMOVE $STAGE/$filename DRY_RUN=TRUE" -o output_format=csv -o header=false -o timing=false -o friendly=false)
-  
+
+  exists=$(snowsql -a "$SNOWFLAKE_ACCOUNT" -u "$SNOWFLAKE_USER" -d FHV_DB -s RAW \
+  -q """
+      LIST ${STAGE}/${filename};
+      SELECT COUNT(*) FROM TABLE(RESULT_SCAN(LAST_QUERY_ID()));
+    """ \
+  -o output_format=tsv \
+  -o header=false \
+  -o timing=false \
+  -o friendly=false
+  )
+
   if [ -n "$exists" ]; then
     echo "Skipping $filename — already exists in stage"
   else
