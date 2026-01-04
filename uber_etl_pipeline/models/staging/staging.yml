@@ -1,0 +1,61 @@
+version: 2
+
+models:
+  - name: stg_uber_trips
+    description: "Staging model for Uber trips data. This model cleans and prepares the raw trip data for further analysis."
+    columns:
+      - name: trip_id
+        description: "A unique identifier for each trip."
+        tests:
+          - unique
+          - not_null
+      - name: request_datetime
+        description: "The date and time of the trip request."
+      - name: on_scene_datetime
+        description: "The date and time the vehicle arrived at the pickup location."
+      - name: pickup_datetime
+        description: "The date and time the trip started."
+        tests:
+          - not_null
+      - name: dropoff_datetime
+        description: "The date and time the trip ended."
+      - name: pulocation_id
+        description: "The pickup location ID."
+        tests:
+          - not_null
+      - name: dolocation_id
+        description: "The dropoff location ID."
+        tests:
+          - not_null
+      - name: trip_miles
+        description: "The distance of the trip in miles."
+      - name: trip_time
+        description: "The duration of the trip in seconds."
+      - name: base_passenger_fare
+        description: "The base fare for the trip."
+      - name: tolls
+        description: "The amount of tolls paid for the trip."
+      - name: bcf
+        description: "Black car fund surcharge."
+      - name: sales_tax
+        description: "Sales tax."
+      - name: congestion_surcharge
+        description: "Congestion surcharge."
+      - name: airport_fee
+        description: "Airport fee."
+      - name: tips
+        description: "Tip amount."
+      - name: driver_pay
+        description: "Driver pay."
+      - name: cbd_congestion_fee
+        description: "CBD congestion fee."
+      - name: shared_request_flag
+        description: "Flag indicating if the trip was a shared request."
+      - name: shared_match_flag
+        description: "Flag indicating if the trip was a shared match."
+      - name: access_a_ride_flag
+        description: "Flag indicating if the trip was an Access-A-Ride request."
+      - name: wav_request_flag
+        description: "Flag indicating if the trip was a wheelchair-accessible vehicle request."
+      - name: wav_match_flag
+        description: "Flag indicating if the trip was a wheelchair-accessible vehicle match."

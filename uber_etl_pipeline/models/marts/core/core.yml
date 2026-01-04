@@ -1,0 +1,134 @@
+version: 2
+
+models:
+  - name: dim_location
+    description: "Location dimension table. Contains information about the pickup and dropoff locations."
+    columns:
+      - name: location_id
+        description: "A unique identifier for each location."
+        tests:
+          - unique
+          - not_null
+      - name: borough
+        description: "The borough of the location."
+      - name: zone
+        description: "The zone of the location."
+      - name: service_zone
+        description: "The service zone of the location."
+
+  - name: dim_datetime
+    description: "Datetime dimension table. Contains information about dates and times."
+    columns:
+      - name: datetime_key
+        description: "A unique identifier for each datetime record."
+        tests:
+          - unique
+          - not_null
+      - name: full_timestamp
+        description: "The full timestamp."
+      - name: date_key
+        description: "The date key."
+      - name: year
+        description: "The year."
+      - name: quarter
+        description: "The quarter."
+      - name: month
+        description: "The month."
+      - name: day_of_month
+        description: "The day of the month."
+      - name: day_of_week
+        description: "The day of the week."
+      - name: day_name
+        description: "The name of the day."
+      - name: hour_24
+        description: "The hour of the day in 24-hour format."
+      - name: is_peak_hour
+        description: "A flag to indicate if the hour is a peak hour."
+      - name: is_weekend
+        description: "A flag to indicate if the day is a weekend."
+      - name: is_night
+        description: "A flag to indicate if the hour is at night."
+      - name: is_holiday
+        description: "A flag to indicate if the day is a holiday."
+      - name: holiday_name
+        description: "The name of the holiday."
+
+  - name: dim_payment_flags
+    description: "Payment flags dimension table. Contains all possible combinations of payment flags."
+    columns:
+      - name: payment_flags_id
+        description: "A unique identifier for each combination of payment flags."
+        tests:
+          - unique
+          - not_null
+      - name: shared_request_flag
+        description: "Flag indicating if the trip was a shared request."
+      - name: shared_match_flag
+        description: "Flag indicating if the trip was a shared match."
+      - name: access_a_ride_flag
+        description: "Flag indicating if the trip was an Access-A-Ride request."
+      - name: wav_request_flag
+        description: "Flag indicating if the trip was a wheelchair-accessible vehicle request."
+      - name: wav_match_flag
+        description: "Flag indicating if the trip was a wheelchair-accessible vehicle match."
+  
+  - name: fact_trips
+    description: "Fact table for Uber trips. Contains information about each trip."
+    columns:
+      - name: trip_id
+        description: "A unique identifier for each trip."
+        tests:
+          - unique
+          - not_null
+        description: "The license number of the high-volume for-hire service."
+      - name: request_datetime
+        description: "The date and time of the trip request."
+      - name: on_scene_datetime
+        description: "The date and time the vehicle arrived at the pickup location."
+      - name: pickup_datetime
+        description: "The date and time the trip started."
+      - name: dropoff_datetime
+        description: "The date and time the trip ended."
+      - name: pulocation_id
+        description: "The pickup location ID."
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_location')
+              field: location_id
+      - name: dolocation_id
+        description: "The dropoff location ID."
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_location')
+              field: location_id
+      - name: trip_miles
+        description: "The distance of the trip in miles."
+      - name: trip_time
+        description: "The duration of the trip in seconds."
+      - name: base_passenger_fare
+        description: "The base fare for the trip."
+      - name: tolls
+        description: "The amount of tolls paid for the trip."
+      - name: bcf
+        description: "Black car fund surcharge."
+      - name: sales_tax
+        description: "Sales tax."
+      - name: congestion_surcharge
+        description: "Congestion surcharge."
+      - name: airport_fee
+        description: "Airport fee."
+      - name: tips
+        description: "Tip amount."
+      - name: driver_pay
+        description: "Driver pay."
+      - name: cbd_congestion_fee
+        description: "CBD congestion fee."
+      - name: payment_flags_id
+        description: "The foreign key to the payment flags dimension table."
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_payment_flags')
+              field: payment_flags_id

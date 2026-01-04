@@ -6,7 +6,8 @@
   )
 }}
 
-select {{ dbt_utils.generate_surrogate_key(['pickup_datetime', 'dropoff_datetime']) }} as trip_id,
+select
+  trip_id,
   request_datetime,
   on_scene_datetime,
   pickup_datetime,

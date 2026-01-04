@@ -4,7 +4,9 @@
   )
 }}
 
-select 
+select
+  -- identifiers
+  {{ dbt_utils.generate_surrogate_key(['pickup_datetime', 'dropoff_datetime']) }} as trip_id,
   -- timestamps
   request_datetime,
   on_scene_datetime,
@@ -32,6 +34,6 @@ select
   wav_request_flag,
   wav_match_flag
 from {{ source('raw', 'FHV_TRIPS') }}
-where hvfhs_license_num = 'HV0003' 
+where hvfhs_license_num = 'HV0003' -- Uber HVFHS
   and pickup_datetime is not null 
   and dropoff_datetime is not null
