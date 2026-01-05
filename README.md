@@ -22,19 +22,21 @@ uber_etl_pipeline/
 
 ### Prerequisites
 
-*   [dbt](https://docs.getdbt.com/docs/installation)
-*   [Snowflake Account](https://www.snowflake.com/)
-*   Python 3.x
+- [dbt](https://docs.getdbt.com/docs/installation)
+- [Snowflake Account](https://www.snowflake.com/)
+- Python 3.x
 
 ### Setup
 
 1.  **Clone the repository:**
+
     ```bash
     git clone https://github.com/your-username/uber_etl_pipeline.git
     cd uber_etl_pipeline
     ```
 
 2.  **Install dbt packages:**
+
     ```bash
     dbt deps
     ```
@@ -50,21 +52,25 @@ uber_etl_pipeline/
 ### Running the Pipeline
 
 1.  **Download the data:**
+
     ```bash
     python download_data.py
     ```
 
 2.  **Upload the data to Snowflake:**
+
     ```bash
     ./upload_data_to_snowflake.sh
     ```
 
 3.  **Seed the dbt models:**
+
     ```bash
     dbt seed
     ```
 
 4.  **Run the dbt models:**
+
     ```bash
     dbt run
     ```
@@ -78,15 +84,15 @@ uber_etl_pipeline/
 
 The dbt models transform the raw Uber trip data into a structured format for analysis. The main models are:
 
-*   **`stg_uber_trips`**: Cleans and prepares the raw trip data.
-*   **`fact_trips`**: A fact table containing detailed trip information.
-*   **`dim_datetime`**: A dimension table for time-based analysis.
-*   **`dim_location`**: A dimension table for location-based analysis.
-*   **`dim_payment_flags`**: A dimension table for payment-related flags.
+- **`stg_uber_trips`**: Cleans and prepares the raw trip data.
+- **`fact_trips`**: A fact table containing detailed trip information.
+- **`dim_datetime`**: A dimension table for time-based analysis.
+- **`dim_location`**: A dimension table for location-based analysis.
+- **`dim_trip_flags`**: A dimension table for payment-related flags.
 
 ## Data Sources
 
 The pipeline uses the following data sources:
 
-*   **Uber Trip Data**: Parquet files containing Uber trip data, downloaded from the [TLC Trip Record Data](https://www.nyc.gov/site/tlc/about/tlc-trip-record-data.page) website.
-*   **Taxi Zone Lookup**: A CSV file containing a lookup table for taxi zones, downloaded from the [TLC Trip Record Data](https://www.nyc.gov/site/tlc/about/tlc-trip-record-data.page) website.
+- **Uber Trip Data**: Parquet files containing Uber trip data, downloaded from the [TLC Trip Record Data](https://www.nyc.gov/site/tlc/about/tlc-trip-record-data.page) website.
+- **Taxi Zone Lookup**: A CSV file containing a lookup table for taxi zones, downloaded from the [TLC Trip Record Data](https://www.nyc.gov/site/tlc/about/tlc-trip-record-data.page) website.

@@ -22,7 +22,7 @@ with combinations AS (
   ) e
 )
 SELECT
-  {{ dbt_utils.generate_surrogate_key(['shared_request_flag', 'shared_match_flag', 'access_a_ride_flag', 'wav_request_flag', 'wav_match_flag']) }} AS payment_flags_id,
+  {{ dbt_utils.generate_surrogate_key(['shared_request_flag', 'shared_match_flag', 'access_a_ride_flag', 'wav_request_flag', 'wav_match_flag']) }} AS trip_flags_id,
   shared_request_flag,
   shared_match_flag,
   access_a_ride_flag,
