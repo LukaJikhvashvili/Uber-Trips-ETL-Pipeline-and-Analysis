@@ -1,4 +1,7 @@
-data/
+target/
+dbt_packages/
 logs/
+data/
 
-GEMINI.md
+.user.yml
+package-lock.yml

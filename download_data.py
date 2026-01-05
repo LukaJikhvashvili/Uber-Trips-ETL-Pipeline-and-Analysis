@@ -38,7 +38,7 @@ def main():
 
     # Download CSV file
     csv_url = BASE_URL_CSV
-    csv_local_path = os.path.join("uber_etl_pipeline", "seeds", "seed_zone_lookup.csv")
+    csv_local_path = os.path.join("seeds", "seed_zone_lookup.csv")
     print(f"Downloading {csv_url} to {csv_local_path}")
     download_file(csv_url, csv_local_path)
 
