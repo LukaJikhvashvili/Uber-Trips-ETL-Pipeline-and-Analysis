@@ -1,4 +1,5 @@
-{ { config(materialized = 'table') } }
+{{ config(materialized = 'table') }}
+
 SELECT dd.date_key,
   COUNT(*) AS total_trips,
   SUM(
@@ -31,9 +32,12 @@ SELECT dd.date_key,
       ELSE 0
     END
   ) AS total_access_a_ride_requested
-FROM { { ref('fact_trips') } } ft
-  JOIN { { ref('dim_datetime') } } dd ON DATE_TRUNC('hour', ft.pickup_datetime) = dd.full_timestamp
-  JOIN { { ref('dim_trip_flags') } } pf ON ft.trip_flags_id = pf.trip_flags_id
+FROM {{ ref('fact_trips') }}
+ ft
+  JOIN {{ ref('dim_datetime') }}
+   dd ON DATE_TRUNC('hour', ft.pickup_datetime) = dd.full_timestamp
+  JOIN {{ ref('dim_trip_flags') }}
+   pf ON ft.trip_flags_id = pf.trip_flags_id
 WHERE ft.trip_miles > 0
   AND ft.trip_time > 0
 GROUP BY dd.date_key
