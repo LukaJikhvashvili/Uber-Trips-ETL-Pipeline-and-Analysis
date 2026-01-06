@@ -10,7 +10,7 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(
 
 BASE_URL_PARQUET = "https://d37ci6vzurychx.cloudfront.net/trip-data/fhvhv_tripdata_{year}-{month:02d}.parquet"
 BASE_URL_CSV = "https://d37ci6vzurychx.cloudfront.net/misc/taxi_zone_lookup.csv"
-DEFAULT_YEAR_RANGE = os.getenv('DATA_YEAR_RANGE', '2025-2025')  # A sensible default range
+DEFAULT_YEAR_RANGE = os.getenv('DATA_YEAR_RANGE', '2020-2025')
 
 def download_file(url: str, local_path: Path):
     """
@@ -54,7 +54,6 @@ def update_csv_header(csv_path: Path):
     try:
         with open(csv_path, 'r+') as f:
             first_line = f.readline()
-            # Only rewrite if the header is not what we expect
             if "location_id" not in first_line.lower():
                 logging.info(f"Updating header in {csv_path}")
                 remaining_lines = f.read()
@@ -81,30 +80,54 @@ def parse_args():
         default="1-12", 
         help="Month range for parquet files, e.g., '1-12'. Defaults to all months."
     )
+    parser.add_argument(
+        "--dates",
+        type=str,
+        default=None,
+        help="A comma-separated list of specific dates to download, e.g., '2024-01,2024-03'. Overrides --years and --months."
+    )
     return parser.parse_args()
 
 def main():
     """Main function to coordinate downloading all data files."""
     args = parse_args()
     
-    try:
-        year_start, year_end = map(int, args.years.split('-'))
-        month_start, month_end = map(int, args.months.split('-'))
-    except ValueError:
-        logging.error("Invalid range format. Please use 'start-end', e.g., '2020-2024'.")
-        return
+    files_to_download = []  # List of (year, month) tuples
 
-    # Download parquet files chronologically
-    for year in range(year_start, year_end + 1):
-        for month in range(month_start, month_end + 1):
-            url = BASE_URL_PARQUET.format(year=year, month=month)
-            local_path = Path("data", "parquet", str(year), f"{year}-{month:02d}.parquet")
-            download_file(url, local_path)
+    if args.dates:
+        logging.info(f"Downloading specific dates provided: {args.dates}")
+        for date_str in args.dates.split(','):
+            date_str = date_str.strip()
+            if not date_str:
+                continue
+            try:
+                year, month = map(int, date_str.split('-'))
+                files_to_download.append((year, month))
+            except ValueError:
+                logging.warning(f"Skipping invalid date format: '{date_str}'")
+    else:
+        logging.info(f"Downloading files for year range '{args.years}' and month range '{args.months}'.")
+        try:
+            year_start, year_end = map(int, args.years.split('-'))
+            month_start, month_end = map(int, args.months.split('-'))
+            for year in range(year_start, year_end + 1):
+                for month in range(month_start, month_end + 1):
+                    files_to_download.append((year, month))
 
-    # Download and process the taxi zone lookup CSV
-    csv_local_path = Path("seeds", "seed_zone_lookup.csv")
-    download_file(BASE_URL_CSV, csv_local_path)
-    update_csv_header(csv_local_path)
+            # Download and process the static taxi zone lookup CSV only in full range mode
+            csv_local_path = Path("seeds", "seed_zone_lookup.csv")
+            download_file(BASE_URL_CSV, csv_local_path)
+            update_csv_header(csv_local_path)
+
+        except (ValueError, TypeError):
+            logging.error(f"Invalid range format for years ('{args.years}') or months ('{args.months}'). Please use 'start-end'.")
+            return
+
+    # Download all determined parquet files
+    for year, month in files_to_download:
+        url = BASE_URL_PARQUET.format(year=year, month=month)
+        local_path = Path("data", "parquet", str(year), f"{year}-{month:02d}.parquet")
+        download_file(url, local_path)
 
     logging.info("Download process completed.")
 

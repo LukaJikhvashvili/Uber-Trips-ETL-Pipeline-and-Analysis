@@ -23,7 +23,7 @@ STAGE_NAME = os.getenv("SNOWFLAKE_STAGE", f"{DATABASE}.{SCHEMA}.FHV_INTERNAL_STA
 
 # --- Data Configuration ---
 BASE_FILENAME = "{year}-{month:02d}.parquet"
-DEFAULT_YEAR_RANGE = os.getenv('DATA_YEAR_RANGE')
+DEFAULT_YEAR_RANGE = os.getenv('DATA_YEAR_RANGE', '2020-2025')
 
 def list_files_in_stage(cursor, stage_name: str) -> Set[str]:
     """
@@ -47,6 +47,7 @@ def list_files_in_stage(cursor, stage_name: str) -> Set[str]:
         logging.error(f"Error listing files in stage {stage_name}: {e}")
         return set()
 
+
 def set_github_action_output(name: str, value: str):
     """
     Sets an output parameter for a GitHub Actions workflow by appending to the file
@@ -59,10 +60,12 @@ def set_github_action_output(name: str, value: str):
     # Also print for local execution context
     logging.info(f"Setting GitHub Action output: {name}={value}")
 
+
 def main():
     """
     Checks if data files for a given date range already exist in the Snowflake stage
-    and sets a GitHub Action output 'download_needed' to 'true' or 'false'.
+    and sets a GitHub Action output 'download_needed' to 'true' or 'false', and
+    'missing_dates' to a comma-separated list of YYYY-MM dates.
     """
     # --- Argument Parsing ---
     parser = argparse.ArgumentParser(description="Check for new data files to upload to Snowflake.")
@@ -70,11 +73,9 @@ def main():
         "--years",
         type=str,
         default=DEFAULT_YEAR_RANGE,
-        help=f"Year range for parquet files, e.g., '2020-2025'. Defaults to {DEFAULT_YEAR_RANGE}.",
+        help=f"Year range for parquet files, e.g., '2020-2024'. Defaults to {DEFAULT_YEAR_RANGE}.",
     )
-    parser.add_argument(
-        "--months", type=str, default="1-12", help="Month range for parquet files, e.g., '1-12'."
-    )
+    parser.add_argument("--months", type=str, default="1-12", help="Month range for parquet files, e.g., '1-12'.")
     args = parser.parse_args()
 
     # --- Generate Target File List ---
@@ -84,12 +85,12 @@ def main():
     except ValueError:
         logging.error("Invalid range format. Please use 'start-end', e.g., '2020-2024'.")
         sys.exit(1)
-        
+
     target_files = set()
     for year in range(year_start, year_end + 1):
         for month in range(month_start, month_end + 1):
             target_files.add(BASE_FILENAME.format(year=year, month=month))
-    
+
     logging.info(f"Generated {len(target_files)} target filenames to check for.")
 
     # --- Check for Snowflake Credentials ---
@@ -100,8 +101,12 @@ def main():
     # --- Compare with Staged Files ---
     try:
         with snowflake.connector.connect(
-            user=SNOWFLAKE_USER, password=SNOWFLAKE_PASSWORD, account=SNOWFLAKE_ACCOUNT,
-            warehouse=WAREHOUSE, database=DATABASE, schema=SCHEMA
+            user=SNOWFLAKE_USER,
+            password=SNOWFLAKE_PASSWORD,
+            account=SNOWFLAKE_ACCOUNT,
+            warehouse=WAREHOUSE,
+            database=DATABASE,
+            schema=SCHEMA,
         ) as conn:
             logging.info("Successfully connected to Snowflake.")
             cs = conn.cursor()
@@ -112,18 +117,35 @@ def main():
 
     # Find the difference
     missing_files = target_files - staged_files
-    
+
     if not missing_files:
         logging.info("All target files already exist in the Snowflake stage. No download needed.")
         set_github_action_output("download_needed", "false")
+        set_github_action_output("missing_dates", "")
     else:
         logging.info(f"{len(missing_files)} new file(s) to download.")
+
+        # Extract YYYY-MM from filenames like 'fhvhv_tripdata_YYYY-MM.parquet'
+        missing_dates = set()
+        for f in missing_files:
+            try:
+                date_part = f.replace(".parquet", "")
+                missing_dates.add(date_part)
+            except IndexError:
+                logging.warning(f"Could not parse date from filename: {f}")
+
+        sorted_missing_dates = sorted(list(missing_dates))
+
         # Log a sample of missing files for easier debugging
-        for f in sorted(list(missing_files))[:5]:
-            logging.info(f"  - Missing file: {f}")
-        if len(missing_files) > 5:
-            logging.info(f"  - ... and {len(missing_files) - 5} more.")
+        for date_str in sorted_missing_dates[:5]:
+            logging.info(f"  - Missing date: {date_str}")
+        if len(sorted_missing_dates) > 5:
+            logging.info(f"  - ... and {len(sorted_missing_dates) - 5} more.")
+
+        # Set outputs for GitHub Actions
         set_github_action_output("download_needed", "true")
+        set_github_action_output("missing_dates", ",".join(sorted_missing_dates))
+
 
 if __name__ == "__main__":
     main()

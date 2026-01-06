@@ -18,9 +18,7 @@ jobs:
       SNOWFLAKE_WAREHOUSE: ${{ vars.SNOWFLAKE_WAREHOUSE }}
       SNOWFLAKE_DATABASE: ${{ vars.SNOWFLAKE_DATABASE }}
       SNOWFLAKE_SCHEMA: ${{ vars.SNOWFLAKE_SCHEMA }}
-      SNOWFLAKE_STAGE: ${{ vars.SNOWFLAKE_INTERNAL_STAGE }}
-      SNOWFLAKE_FILE_FORMAT: ${{ vars.SNOWFLAKE_FILE_FORMAT }}
-      DATA_YEAR_RANGE: ${{ vars.DATA_YEAR_RANGE }}
+      DATA_YEAR_RANGE: "2020-2024"
 
     steps:
       - name: Checkout repo
@@ -34,15 +32,15 @@ jobs:
       - name: Install Python dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install -r requirements.txt
+          pip install -r requirements.txt dbt-core dbt-snowflake
 
       - name: Check for new data
         id: check_files
-        run: python check_for_new_data.py
+        run: python check_for_new_data.py --years ${{ env.DATA_YEAR_RANGE }}
 
       - name: Download source data
         if: steps.check_files.outputs.download_needed == 'true'
-        run: python download_data.py
+        run: python download_data.py --dates "${{ steps.check_files.outputs.missing_dates }}"
 
       - name: Upload data to Snowflake Stage
         if: steps.check_files.outputs.download_needed == 'true'

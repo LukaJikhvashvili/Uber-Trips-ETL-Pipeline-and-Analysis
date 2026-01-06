@@ -1,4 +1,4 @@
+tqdm
 dbt-core
 dbt-snowflake
 snowflake-connector-python
-tqdm
