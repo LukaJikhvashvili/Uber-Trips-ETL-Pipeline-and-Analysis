@@ -1,7 +1,8 @@
 {{ 
   config(
-    materialized = 'table',
-    cluster_by = ['date_key']
+    materialized = 'incremental',
+    cluster_by = ['date_key'],
+    unique_key = 'datetime_key'
   )
 }} 
 

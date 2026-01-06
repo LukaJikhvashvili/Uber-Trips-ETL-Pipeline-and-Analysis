@@ -1,6 +1,8 @@
 {{
   config(
-    materialized='view',
+    materialized='incremental',
+    cluster_by = ['pickup_datetime'],
+    unique_key = 'trip_id'
   )
 }}
 
@@ -37,3 +39,9 @@ from {{ source('raw', 'FHV_TRIPS') }}
 where hvfhs_license_num = 'HV0003' -- Uber HVFHS
   and pickup_datetime is not null 
   and dropoff_datetime is not null
+{% if is_incremental() %}
+
+  -- this filter ensures that only new trip records are inserted
+  where ingestion_ts > (select max(ingestion_ts) from {{ this }})
+
+{% endif %}
