@@ -42,6 +42,6 @@ where hvfhs_license_num = 'HV0003' -- Uber HVFHS
 {% if is_incremental() %}
 
   -- this filter ensures that only new trip records are inserted
-  where ingestion_ts > (select max(ingestion_ts) from {{ this }})
+  and ingestion_ts > (select max(ingestion_ts) from {{ this }})
 
 {% endif %}
