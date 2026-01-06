@@ -46,7 +46,7 @@ uber_etl_pipeline/
     ```bash
     export SNOWFLAKE_ACCOUNT=<your_snowflake_account>
     export SNOWFLAKE_USER=<your_snowflake_user>
-    export SNOWSQL_PWD=<your_snowflake_password>
+    export SNOWFLAKE_PASSWORD=<your_snowflake_password>
     ```
 
 ### Running the Pipeline

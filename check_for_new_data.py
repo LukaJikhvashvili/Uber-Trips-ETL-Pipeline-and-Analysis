@@ -14,7 +14,7 @@ logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(
 # --- Snowflake Configuration ---
 # Fetch credentials from environment variables
 SNOWFLAKE_USER = os.getenv("SNOWFLAKE_USER")
-SNOWFLAKE_PASSWORD = os.getenv("SNOWSQL_PWD")
+SNOWFLAKE_PASSWORD = os.getenv("SNOWFLAKE_PASSWORD")
 SNOWFLAKE_ACCOUNT = os.getenv("SNOWFLAKE_ACCOUNT")
 WAREHOUSE = os.getenv("SNOWFLAKE_WAREHOUSE", "COMPUTE_WH")
 DATABASE = os.getenv("SNOWFLAKE_DATABASE", "FHV_DB")
@@ -94,7 +94,7 @@ def main():
 
     # --- Check for Snowflake Credentials ---
     if not all([SNOWFLAKE_USER, SNOWFLAKE_PASSWORD, SNOWFLAKE_ACCOUNT]):
-        logging.error("Snowflake credentials (SNOWFLAKE_USER, SNOWSQL_PWD, SNOWFLAKE_ACCOUNT) are not set.")
+        logging.error("Snowflake credentials (SNOWFLAKE_USER, SNOWFLAKE_PASSWORD, SNOWFLAKE_ACCOUNT) are not set.")
         sys.exit(1)
 
     # --- Compare with Staged Files ---
