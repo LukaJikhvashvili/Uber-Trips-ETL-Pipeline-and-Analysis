@@ -6,6 +6,13 @@
   )
 }}
 
+{% if is_incremental() %}
+with max_ingestion as (
+    select 
+      max(ingestion_ts) as max_ingestion_ts 
+    from {{ this }}
+)
+{% endif %}
 select
   -- identifiers
   {{ dbt_utils.generate_surrogate_key(['pickup_datetime', 'dropoff_datetime']) }} as trip_id,
@@ -36,12 +43,10 @@ select
   wav_request_flag,
   wav_match_flag
 from {{ source('raw', 'FHV_TRIPS') }}
+{% if is_incremental() %}
+join max_ingestion
+  on ingestion_ts > max_ingestion.max_ingestion_ts
+{% endif %}
 where hvfhs_license_num = 'HV0003' -- Uber HVFHS
   and pickup_datetime is not null 
   and dropoff_datetime is not null
-{% if is_incremental() %}
-
-  -- this filter ensures that only new trip records are inserted
-  and ingestion_ts > (select max(ingestion_ts) from {{ this }})
-
-{% endif %}
