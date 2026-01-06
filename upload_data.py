@@ -106,8 +106,9 @@ def main():
                 logging.info(f"Uploading {file_path.name}...")
                 absolute_file_path = str(file_path.resolve())
                 # Use POSIX path for cross-platform compatibility in Snowflake URIs
-                put_sql = f"PUT file://{absolute_file_path.replace('\\', '/')} @{STAGE_NAME} AUTO_COMPRESS=TRUE PARALLEL=16;"
-                
+                normalized_path = absolute_file_path.replace("\\", "/")
+                put_sql = f"PUT file://{normalized_path} @{STAGE_NAME} AUTO_COMPRESS=TRUE PARALLEL=16;"
+
                 try:
                     cs.execute(put_sql)
                     # A "no results" error is expected on successful PUT, so we can't rely on simple success.
