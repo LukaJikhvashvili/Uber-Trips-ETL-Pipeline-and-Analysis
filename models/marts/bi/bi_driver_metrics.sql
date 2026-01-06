@@ -1,6 +1,12 @@
-{{ config(materialized = 'table') }}
+{{ 
+  config(
+    materialized = 'incremental',
+    unique_key='date_key'
+  ) 
+}}
 
-SELECT dd.date_key,
+SELECT
+  dd.date_key,
   AVG(trip_miles) AS avg_trip_miles,
   AVG(trip_time) AS avg_trip_time_seconds,
   AVG(driver_pay) AS avg_driver_pay,

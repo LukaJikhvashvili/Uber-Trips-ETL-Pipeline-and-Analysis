@@ -51,31 +51,8 @@ jobs:
       - name: Install dbt deps
         run: dbt deps
 
-      # Restore previous state (if exists)
-      - name: Restore dbt state
-        uses: actions/cache@v4
-        with:
-          path: .artifacts
-          key: dbt-state-${{ github.ref }}
-          restore-keys: |
-            dbt-state-
-
       - name: dbt seed
         run: dbt seed --target ci
 
       - name: dbt build (modified models only)
-        run: |
-          if [ -f .artifacts/manifest.json ]; then
-            dbt build \
-              --target ci \
-              --select state:modified+ \
-              --state .artifacts
-          else
-            dbt build --target ci
-          fi
-
-      # Save new state
-      - name: Save dbt state
-        run: |
-          mkdir -p .artifacts
-          cp target/manifest.json .artifacts/
+        run: dbt build --target ci

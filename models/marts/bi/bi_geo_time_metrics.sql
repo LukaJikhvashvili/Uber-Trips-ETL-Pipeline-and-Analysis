@@ -1,11 +1,13 @@
 {{ 
   config(
-    materialized='table'
+    materialized='incremental',
+    unique_key='date_key'
   ) 
 }}
 
 SELECT
   dd.date_key,
+  dd.year,
   dd.month,
   dd.day_of_week,
   dd.hour_24,
@@ -25,6 +27,6 @@ JOIN {{ ref('dim_datetime') }} dd ON DATE_TRUNC('hour', ft.pickup_datetime) = dd
 JOIN {{ ref('dim_location') }} pu ON ft.pulocation_id = pu.location_id
 JOIN {{ ref('dim_location') }} do ON ft.dolocation_id = do.location_id
 GROUP BY
-    dd.date_key, dd.month, dd.day_of_week, dd.hour_24,
+    dd.date_key, dd.year, dd.month, dd.day_of_week, dd.hour_24,
     pu_borough, pu_zone,
     do_borough, do_zone

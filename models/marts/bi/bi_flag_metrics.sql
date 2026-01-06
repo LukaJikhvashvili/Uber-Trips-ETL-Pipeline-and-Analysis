@@ -1,6 +1,12 @@
-{{ config(materialized = 'table') }}
+{{ 
+  config(
+    materialized = 'incremental',
+    unique_key='date_key'
+  ) 
+}}
 
-SELECT dd.date_key,
+SELECT 
+  dd.date_key,
   COUNT(*) AS total_trips,
   SUM(
     CASE

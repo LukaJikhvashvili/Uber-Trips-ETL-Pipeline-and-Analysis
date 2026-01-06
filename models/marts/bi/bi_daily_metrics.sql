@@ -1,6 +1,12 @@
-{{ config(materialized = 'table') }}
+{{ 
+  config(
+    materialized = 'incremental',
+    unique_key='date_key'
+  ) 
+}}
 
-SELECT dd.date_key,
+SELECT
+  dd.date_key,
   COUNT(*) AS total_trips,
   SUM(trip_miles) AS total_trip_miles,
   SUM(trip_time) / (3600 * 24) AS total_trip_time_days,
