@@ -110,8 +110,8 @@ def main():
         try:
             year_start, year_end = map(int, args.years.split('-'))
             month_start, month_end = map(int, args.months.split('-'))
-            for year in range(year_start, year_end + 1):
-                for month in range(month_start, month_end + 1):
+            for year in range(year_end, year_start - 1, -1):
+                for month in range(month_end, month_start - 1, -1):
                     files_to_download.append((year, month))
 
             # Download and process the static taxi zone lookup CSV only in full range mode
