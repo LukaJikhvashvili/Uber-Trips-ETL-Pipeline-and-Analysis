@@ -41,7 +41,8 @@ select
   shared_match_flag,
   access_a_ride_flag,
   wav_request_flag,
-  wav_match_flag
+  wav_match_flag,
+  ingestion_ts
 from {{ source('raw', 'FHV_TRIPS') }}
 {% if is_incremental() %}
 join max_ingestion
