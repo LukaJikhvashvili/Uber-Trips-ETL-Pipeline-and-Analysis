@@ -103,7 +103,7 @@ def main():
                     $1:airport_fee::FLOAT,
                     $1:tips::FLOAT,
                     $1:driver_pay::FLOAT,
-                    $1:cbd_congestion_surcharge::FLOAT,
+                    $1:cbd_congestion_fee::FLOAT,
                     $1:shared_request_flag::STRING,
                     $1:shared_match_flag::STRING,
                     $1:access_a_ride_flag::STRING,
