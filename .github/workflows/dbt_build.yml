@@ -48,6 +48,9 @@ jobs:
         if: steps.check_files.outputs.download_needed == 'true'
         run: python upload_data.py
 
+      - name: Get data into RAW FHV_TRIPS table
+        run: python get_data_into_raw_table.py
+
       - name: Install dbt deps
         run: dbt deps
 
