@@ -19,4 +19,7 @@ FROM {{ ref('fact_trips') }} ft
   JOIN {{ ref('dim_trip_flags') }} pf ON ft.trip_flags_id = pf.trip_flags_id
 WHERE ft.trip_miles > 0
   AND ft.trip_time > 0
+{% if is_incremental() %}
+  AND dd.date_key not in (select date_key from {{ this }})
+{% endif %}
 GROUP BY dd.date_key

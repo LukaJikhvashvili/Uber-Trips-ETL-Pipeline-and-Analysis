@@ -53,3 +53,6 @@ SELECT {{ dbt_utils.generate_surrogate_key(['date_hour']) }} AS datetime_key,
   h.holiday_name AS holiday_name
 FROM date_spine
   LEFT JOIN holidays h ON DATE(date_hour) = h.holiday_date
+{% if is_incremental() %}
+WHERE datetime_key not in (select datetime_key from {{ this }})
+{% endif %}

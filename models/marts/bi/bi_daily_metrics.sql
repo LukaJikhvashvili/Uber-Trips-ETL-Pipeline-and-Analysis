@@ -32,6 +32,9 @@ SELECT
     END
   ) / COUNT(*) * 100 AS percent_shared_rides
 FROM {{ ref('fact_trips') }} ft
-  JOIN {{ ref('dim_datetime') }} dd ON DATE_TRUNC('hour', ft.pickup_datetime) = dd.full_timestamp
-  JOIN {{ ref('dim_trip_flags') }} pf ON ft.trip_flags_id = pf.trip_flags_id
+JOIN {{ ref('dim_datetime') }} dd ON DATE_TRUNC('hour', ft.pickup_datetime) = dd.full_timestamp
+JOIN {{ ref('dim_trip_flags') }} pf ON ft.trip_flags_id = pf.trip_flags_id
+{% if is_incremental() %}
+WHERE dd.date_key not in (select date_key from {{ this }})
+{% endif %}
 GROUP BY dd.date_key
