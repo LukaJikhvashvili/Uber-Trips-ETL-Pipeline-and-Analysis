@@ -1,0 +1,66 @@
+name: CI Data Pipeline
+
+on:
+  push:
+    branches: [ main, airflow ]
+  workflow_dispatch:
+
+jobs:
+  dbt:
+    runs-on: ubuntu-latest
+
+    env:
+      DBT_PROFILES_DIR: dbt
+      SNOWFLAKE_ACCOUNT: ${{ secrets.SNOWFLAKE_ACCOUNT }}
+      SNOWFLAKE_USER: ${{ secrets.SNOWFLAKE_USER }}
+      SNOWFLAKE_PASSWORD: ${{ secrets.SNOWFLAKE_PASSWORD }}
+      SNOWFLAKE_ROLE: ${{ vars.SNOWFLAKE_ROLE }}
+      SNOWFLAKE_WAREHOUSE: ${{ vars.SNOWFLAKE_WAREHOUSE }}
+      SNOWFLAKE_DATABASE: ${{ vars.SNOWFLAKE_DATABASE }}
+      SNOWFLAKE_SCHEMA: ${{ vars.SNOWFLAKE_SCHEMA }}
+      SNOWFLAKE_STAGE: ${{ vars.SNOWFLAKE_INTERNAL_STAGE }}
+      SNOWFLAKE_FILE_FORMAT: ${{ vars.SNOWFLAKE_FILE_FORMAT }}
+      DATA_YEAR_RANGE: ${{ vars.DATA_YEAR_RANGE }}
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install dbt-core dbt-snowflake
+
+      - name: Install dbt deps
+        run: cd dbt && dbt deps
+
+         # Restore previous state (if exists)
+      - name: Restore dbt state
+        uses: actions/cache@v4
+        with:
+          path: .artifacts
+          key: dbt-state-${{ github.ref }}
+          restore-keys: |
+            dbt-state-
+
+      - name: dbt build (modified models only)
+        run: |
+          if [ -f .artifacts/manifest.json ]; then
+            cd dbt && dbt build \
+              --target ci \
+              --select state:modified+ \
+              --state .artifacts
+          else
+            cd dbt && dbt build --target ci
+          fi
+
+      # Save new state
+      - name: Save dbt state
+        run: |
+          mkdir -p .artifacts
+          cp dbt/target/manifest.json .artifacts/
