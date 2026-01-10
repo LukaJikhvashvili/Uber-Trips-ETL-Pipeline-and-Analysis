@@ -53,7 +53,7 @@ jobs:
             cd dbt && dbt build \
               --target ci \
               --select state:modified+ \
-              --state .artifacts
+              --state ../.artifacts
           else
             cd dbt && dbt build --target ci
           fi

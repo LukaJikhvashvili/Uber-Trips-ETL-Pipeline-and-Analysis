@@ -1,9 +1,8 @@
 name: dbt Build Modified Models
 
 on:
-  pull_request:
-    branches:
-      - main
+  push:
+    branches: [ airflow ]
 
 jobs:
   build:
