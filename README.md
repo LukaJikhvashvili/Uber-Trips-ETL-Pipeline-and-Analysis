@@ -15,26 +15,30 @@ This project is a dbt-based ETL pipeline for analyzing Uber trip data. It automa
 
 ```
 uber_etl_pipeline/
-├── .github/                  # GitHub Actions workflows
-│   └── workflows/
-│       └── dbt_build.yml     # CI/CD pipeline for the project
-├── .dockerignore             # Docker ignore file
-├── Dockerfile                # Dockerfile for the Airflow environment
-├── data/                     # Raw and processed data files
-├── dbt_project.yml           # dbt project configuration
-├── models/                   # dbt models
-│   ├── marts/                # Data marts for analysis
-│   └── staging/              # Staging models for data cleaning
-├── seeds/                    # CSV seed files
-├── tests/                    # Data quality tests
-├── airflow/         # Airflow project specific files
-│   └── dags/                 # Airflow DAGs
-│       └── uber_etl_dag.py
-├── download_data.py          # Script to download data from the NYC TLC website
-├── upload_data.py            # Script to upload data to a Snowflake stage
-├── get_data_into_raw_table.py # Script to load data from stage to raw table
-├── check_for_new_data.py     # Script to check for new data to download
-└── README.md                 # This file
+├── .dockerignore
+├── .gitignore
+├── Dockerfile
+├── README.md
+├── requirements.txt
+├── .astro/
+│   └── config.yaml
+├── dags/
+│   └── uber_etl_dag.py
+├── dbt/
+│   ├── dbt_project.yml
+│   ├── models/
+│   │   ├── marts/
+│   │   │   ├── bi/
+│   │   │   └── core/
+│   │   └── staging/
+│   ├── seeds/
+│   └── ...
+├── include/
+│   ├── check_for_new_data.py
+│   ├── download_data.py
+│   ├── get_data_into_raw_table.py
+│   └── upload_data.py
+└── ...
 ```
 
 ## Getting Started
@@ -52,8 +56,8 @@ uber_etl_pipeline/
 1.  **Clone the repository:**
 
     ```bash
-    git clone https://github.com/your-username/uber_etl_pipeline.git
-    cd uber_etl_pipeline
+    git clone https://github.com/LukaJikhvashvili/Uber-Trips-ETL-Pipeline-and-Analysis.git
+    cd Uber-Trips-ETL-Pipeline-and-Analysis
     ```
 
 2.  **Install dependencies:**
@@ -64,11 +68,18 @@ uber_etl_pipeline/
     ```
 
 3.  **Set up Snowflake credentials:**
-    Set the following environment variables with your Snowflake account details:
+    Create the .env file and set the following environment variables with your Snowflake account details:
     ```bash
-    export SNOWFLAKE_ACCOUNT=<your_snowflake_account>
-    export SNOWFLAKE_USER=<your_snowflake_user>
-    export SNOWFLAKE_PASSWORD=<your_snowflake_password>
+    SNOWFLAKE_ACCOUNT=
+    SNOWFLAKE_USER=
+    SNOWFLAKE_PASSWORD=
+    SNOWFLAKE_ROLE=
+    SNOWFLAKE_WAREHOUSE=
+    SNOWFLAKE_DATABASE=
+    SNOWFLAKE_SCHEMA=<schema_where_the_internal_file_stage_is_located>
+    SNOWFLAKE_STAGE=<name_of_the_internal_stage_for_data_upload>
+    SNOWFLAKE_FILE_FORMAT=<parquet_file_format>
+    DATA_YEAR_RANGE=<year_range_to_download_data> # e.g. (2020-2026)
     ```
 
 ### Running the Pipeline with Airflow
@@ -98,17 +109,6 @@ The dbt models transform the raw Uber trip data into a structured format for ana
 - **`dim_datetime`**: A dimension table for time-based analysis.
 - **`dim_location`**: A dimension table for location-based analysis.
 - **`dim_trip_flags`**: A dimension table for payment-related flags.
-
-## CI/CD Pipeline
-
-The project includes a GitHub Actions workflow in `.github/workflows/dbt_build.yml` that automates the testing of the dbt project. The workflow is triggered on pushes to the `main` branch and can also be run manually. It performs the following steps:
-
-1.  **Installs dependencies.**
-2.  **Runs `dbt deps` to install dbt packages.**
-3.  **Runs `dbt seed` to load seed data.**
-4.  **Runs `dbt build` to build and test the dbt models.**
-
-This ensures that the dbt project is always in a valid state.
 
 ## Data Sources
 
