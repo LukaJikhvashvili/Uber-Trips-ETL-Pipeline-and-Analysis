@@ -1,4 +1,5 @@
 astro
+.artifacts
 .git
 .github
 .env

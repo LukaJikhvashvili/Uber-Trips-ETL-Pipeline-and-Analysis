@@ -110,6 +110,12 @@ The dbt models transform the raw Uber trip data into a structured format for ana
 - **`dim_location`**: A dimension table for location-based analysis.
 - **`dim_trip_flags`**: A dimension table for payment-related flags.
 
+## CI/CD Pipeline
+
+The project includes a GitHub Actions workflow in `.github/workflows/ci.yml` that automates the testing of the dbt project on push to the `main` branch.
+
+This workflow uses a "slim CI" approach. It intelligently compares the changes in the pull request against the `main` branch to identify only the dbt models that have been modified. It then runs `dbt build` on just those modified models and their downstream dependencies. This significantly speeds up CI runs by avoiding the need to build and test the entire dbt project on every change.
+
 ## Data Sources
 
 The pipeline uses the following data sources:
