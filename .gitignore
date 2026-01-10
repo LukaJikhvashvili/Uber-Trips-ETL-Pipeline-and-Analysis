@@ -1,12 +1,20 @@
+.git
+.env
+.DS_Store
+airflow_settings.yaml
+__pycache__/
+astro
+.venv
+airflow-webserver.pid
+webserver_config.py
+airflow.cfg
+airflow.db
+
 target/
 dbt_packages/
 logs/
 data/
 
-.user.yml
 package-lock.yml
 
 GEMINI.md
-
-airflow/.astro
-airflow/.env
