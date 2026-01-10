@@ -1,33 +1,40 @@
 # Uber ETL Pipeline
 
-This project is a dbt-based ETL pipeline for analyzing Uber trip data. It automates the process of downloading, ingesting, and transforming Uber trip data into a structured format for analysis in Snowflake.
+This project is a dbt-based ETL pipeline for analyzing Uber trip data. It automates the process of downloading, ingesting, and transforming Uber trip data into a structured format for analysis in Snowflake. The pipeline is orchestrated using Apache Airflow.
 
 ## Features
 
 - **Automated Data Ingestion**: Automatically downloads the latest Uber trip data in Parquet format and taxi zone lookup data from the NYC TLC website.
 - **Efficient Data Loading**: Uploads data to a Snowflake internal stage, checking for existing files to avoid duplicates.
 - **Incremental Data Transformation**: Uses dbt to incrementally transform and model the data, ensuring that only new or modified data is processed.
-- **CI/CD Automation**: Includes a GitHub Actions workflow to automate the entire ETL process, from data downloading to dbt model building.
+- **Orchestration with Airflow**: Includes an Airflow DAG to orchestrate the entire ETL process, from data downloading to dbt model building and testing.
+- **CI/CD Automation**: Includes a GitHub Actions workflow to automate the testing and validation of the dbt project.
 - **Data Quality Testing**: Includes dbt tests to ensure the integrity and quality of the transformed data.
 
 ## Project Structure
 
 ```
 uber_etl_pipeline/
-├── .github/               # GitHub Actions workflows
+├── .github/                  # GitHub Actions workflows
 │   └── workflows/
-│       └── dbt_build.yml  # CI/CD pipeline for the project
-├── data/                  # Raw and processed data files
-├── dbt_project.yml        # dbt project configuration
-├── models/                # dbt models
-│   ├── marts/             # Data marts for analysis
-│   └── staging/           # Staging models for data cleaning
-├── seeds/                 # CSV seed files
-├── tests/                 # Data quality tests
-├── download_data.py       # Script to download data from the NYC TLC website
-├── upload_data.py         # Script to upload data to a Snowflake stage
-├── check_for_new_data.py  # Script to check for new data to download
-└── README.md              # This file
+│       └── dbt_build.yml     # CI/CD pipeline for the project
+├── .dockerignore             # Docker ignore file
+├── Dockerfile                # Dockerfile for the Airflow environment
+├── data/                     # Raw and processed data files
+├── dbt_project.yml           # dbt project configuration
+├── models/                   # dbt models
+│   ├── marts/                # Data marts for analysis
+│   └── staging/              # Staging models for data cleaning
+├── seeds/                    # CSV seed files
+├── tests/                    # Data quality tests
+├── airflow/         # Airflow project specific files
+│   └── dags/                 # Airflow DAGs
+│       └── uber_etl_dag.py
+├── download_data.py          # Script to download data from the NYC TLC website
+├── upload_data.py            # Script to upload data to a Snowflake stage
+├── get_data_into_raw_table.py # Script to load data from stage to raw table
+├── check_for_new_data.py     # Script to check for new data to download
+└── README.md                 # This file
 ```
 
 ## Getting Started
@@ -35,6 +42,8 @@ uber_etl_pipeline/
 ### Prerequisites
 
 - [dbt](https://docs.getdbt.com/docs/installation)
+- [Docker](https://docs.docker.com/get-docker/)
+- [Astro CLI](https://docs.astronomer.io/astro/cli/install-cli)
 - [Snowflake Account](https://www.snowflake.com/)
 - Python 3.x
 
@@ -62,36 +71,23 @@ uber_etl_pipeline/
     export SNOWFLAKE_PASSWORD=<your_snowflake_password>
     ```
 
-### Running the Pipeline Manually
+### Running the Pipeline with Airflow
 
-1.  **Download the data:**
+The ETL pipeline is orchestrated using the `uber_etl_dag` Airflow DAG. To run the pipeline, you need to start the Airflow environment using the Astro CLI from the root of the project.
 
-    ```bash
-    python download_data.py
-    ```
-
-2.  **Upload the data to Snowflake:**
+1.  **Start the Airflow environment:**
 
     ```bash
-    python upload_data.py
+    astro dev start
     ```
 
-3.  **Seed the dbt models:**
+2.  **Access the Airflow UI:**
 
-    ```bash
-    dbt seed
-    ```
+    Open your browser and navigate to `http://localhost:8080`.
 
-4.  **Run the dbt models:**
+3.  **Trigger the DAG:**
 
-    ```bash
-    dbt run
-    ```
-
-5.  **Test the data quality:**
-    ```bash
-    dbt test
-    ```
+    In the Airflow UI, you will see the `uber_etl_dag`. You can trigger it manually to run the pipeline.
 
 ## Data Models
 
@@ -105,12 +101,14 @@ The dbt models transform the raw Uber trip data into a structured format for ana
 
 ## CI/CD Pipeline
 
-The project includes a GitHub Actions workflow in `.github/workflows/dbt_build.yml` that automates the ETL pipeline. The workflow is triggered on pushes to the `main` branch and can also be run manually. It performs the following steps:
+The project includes a GitHub Actions workflow in `.github/workflows/dbt_build.yml` that automates the testing of the dbt project. The workflow is triggered on pushes to the `main` branch and can also be run manually. It performs the following steps:
 
-1.  **Checks for new data**: The `check_for_new_data.py` script checks if there is new data to download from the NYC TLC website.
-2.  **Downloads new data**: If new data is available, the `download_data.py` script is run to download it.
-3.  **Uploads data to Snowflake**: The new data is uploaded to a Snowflake internal stage using the `upload_data.py` script.
-4.  **Runs dbt**: The dbt models are run to transform the new data. The pipeline is configured to only run modified models and their downstream dependencies.
+1.  **Installs dependencies.**
+2.  **Runs `dbt deps` to install dbt packages.**
+3.  **Runs `dbt seed` to load seed data.**
+4.  **Runs `dbt build` to build and test the dbt models.**
+
+This ensures that the dbt project is always in a valid state.
 
 ## Data Sources
 

@@ -1,0 +1,5 @@
+tqdm
+dbt-core
+dbt-snowflake
+snowflake-connector-python
+apache-airflow-providers-snowflake

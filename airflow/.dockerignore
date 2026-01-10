@@ -1,0 +1,26 @@
+.gitignore
+
+# dbt
+dbt/target/
+dbt/logs/
+
+# Python
+.venv/
+__pycache__/
+*.pyc
+
+# IDE
+.idea/
+.vscode/
+
+# OS
+.DS_Store
+
+# Astro
+.astro/
+airflow_settings.yaml
+airflow.db
+airflow.cfg
+
+# Data
+data/

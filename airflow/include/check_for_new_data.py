@@ -23,7 +23,7 @@ STAGE_NAME = os.getenv("SNOWFLAKE_STAGE", f"{DATABASE}.{SCHEMA}.FHV_INTERNAL_STA
 
 # --- Data Configuration ---
 BASE_FILENAME = "{year}-{month:02d}.parquet"
-DEFAULT_YEAR_RANGE = os.getenv('DATA_YEAR_RANGE', '2020-2025')
+DEFAULT_YEAR_RANGE = os.getenv('DATA_YEAR_RANGE', '2025-2026')
 
 def list_files_in_stage(cursor, stage_name: str) -> Set[str]:
     """
@@ -50,15 +50,9 @@ def list_files_in_stage(cursor, stage_name: str) -> Set[str]:
 
 def set_github_action_output(name: str, value: str):
     """
-    Sets an output parameter for a GitHub Actions workflow by appending to the file
-    specified by the GITHUB_OUTPUT environment variable.
+    Prints an output parameter to stdout, for use in shell scripting.
     """
-    output_file = os.getenv("GITHUB_OUTPUT")
-    if output_file:
-        with open(output_file, "a") as f:
-            f.write(f"{name}={value}\n")
-    # Also print for local execution context
-    logging.info(f"Setting GitHub Action output: {name}={value}")
+    print(f"{name}={value}")
 
 
 def main():

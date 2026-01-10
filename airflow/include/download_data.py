@@ -10,7 +10,7 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(
 
 BASE_URL_PARQUET = "https://d37ci6vzurychx.cloudfront.net/trip-data/fhvhv_tripdata_{year}-{month:02d}.parquet"
 BASE_URL_CSV = "https://d37ci6vzurychx.cloudfront.net/misc/taxi_zone_lookup.csv"
-DEFAULT_YEAR_RANGE = os.getenv('DATA_YEAR_RANGE', '2020-2025')
+DEFAULT_YEAR_RANGE = os.getenv('DATA_YEAR_RANGE', '2025-2026')
 
 def download_file(url: str, local_path: Path):
     """
@@ -115,7 +115,7 @@ def main():
                     files_to_download.append((year, month))
 
             # Download and process the static taxi zone lookup CSV only in full range mode
-            csv_local_path = Path("seeds", "seed_zone_lookup.csv")
+            csv_local_path = Path('/usr/local/airflow/dbt',"seeds", "seed_zone_lookup.csv")
             download_file(BASE_URL_CSV, csv_local_path)
             update_csv_header(csv_local_path)
 
@@ -126,7 +126,7 @@ def main():
     # Download all determined parquet files
     for year, month in files_to_download:
         url = BASE_URL_PARQUET.format(year=year, month=month)
-        local_path = Path("data", "parquet", str(year), f"{year}-{month:02d}.parquet")
+        local_path = Path('/usr/local/airflow/',"data", "parquet", str(year), f"{year}-{month:02d}.parquet")
         download_file(url, local_path)
 
     logging.info("Download process completed.")

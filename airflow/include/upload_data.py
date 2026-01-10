@@ -25,7 +25,7 @@ if not all([SNOWFLAKE_USER, SNOWFLAKE_PASSWORD, SNOWFLAKE_ACCOUNT]):
     logging.error("Error: SNOWFLAKE_ACCOUNT, SNOWFLAKE_USER, and SNOWFLAKE_PASSWORD must be set.")
     sys.exit(1)
 
-DATA_DIR = Path("data/parquet")
+DATA_DIR = Path("/usr/local/airflow/data/parquet")
 
 def execute_sql(cursor, sql_text: str, success_msg: str = ""):
     """Executes a single SQL statement."""
