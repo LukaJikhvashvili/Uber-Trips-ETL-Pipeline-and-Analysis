@@ -2,7 +2,7 @@ name: CI Data Pipeline
 
 on:
   push:
-    branches: [ main, airflow ]
+    branches: [ main ]
   workflow_dispatch:
 
 jobs:
