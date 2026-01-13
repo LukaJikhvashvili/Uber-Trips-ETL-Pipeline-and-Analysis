@@ -1,55 +1,61 @@
 # Uber ETL Pipeline
 
-This project is a dbt-based ETL pipeline for analyzing Uber trip data. It automates the process of downloading, ingesting, and transforming Uber trip data into a structured format for analysis in Snowflake. The pipeline is orchestrated using Apache Airflow.
+This project implements a robust and automated ETL (Extract, Transform, Load) pipeline for analyzing Uber trip data. It leverages modern data stack tools like Apache Airflow for orchestration, dbt (data build tool) for data transformation, and Snowflake as the data warehouse. The pipeline is designed for efficient, incremental processing and includes CI/CD practices to ensure data quality and reliability.
 
 ## Features
 
-- **Automated Data Ingestion**: Automatically downloads the latest Uber trip data in Parquet format and taxi zone lookup data from the NYC TLC website.
-- **Efficient Data Loading**: Uploads data to a Snowflake internal stage, checking for existing files to avoid duplicates.
-- **Incremental Data Transformation**: Uses dbt to incrementally transform and model the data, ensuring that only new or modified data is processed.
-- **Orchestration with Airflow**: Includes an Airflow DAG to orchestrate the entire ETL process, from data downloading to dbt model building and testing.
-- **CI/CD Automation**: Includes a GitHub Actions workflow to automate the testing and validation of the dbt project.
-- **Data Quality Testing**: Includes dbt tests to ensure the integrity and quality of the transformed data.
+-   **Automated Data Ingestion**: The pipeline automatically checks for and downloads the latest monthly Uber trip data in Parquet format, along with NYC taxi zone lookup data, directly from the NYC TLC website.
+-   **Efficient Data Loading**: Data is efficiently uploaded to a Snowflake internal stage. The system intelligently checks for existing files to prevent redundant uploads and ensures data integrity.
+-   **Incremental Data Transformation with dbt**: Utilizes dbt to incrementally transform and model raw data into a structured, analytics-ready format. This approach processes only new or modified data, significantly optimizing performance and resource usage.
+-   **Orchestration with Apache Airflow**: A dedicated Airflow DAG (`uber_etl_dag.py`) orchestrates the entire ETL process, from initial data download and staging to dbt model building and comprehensive data quality testing.
+-   **Robust CI/CD Automation**: A GitHub Actions workflow automates the testing and validation of the dbt project. It employs a "slim CI" strategy to test only modified models and their dependencies, accelerating feedback loops.
+-   **Comprehensive Data Quality Testing**: Integrates dbt tests to enforce data integrity, uniqueness, non-null constraints, and freshness, ensuring the highest quality of transformed data.
+
+## Architecture Diagram
+
+![Architecture Diagram](Images/architecture_diagram.svg)
+
 
 ## Project Structure
 
 ```
 uber_etl_pipeline/
-├── .dockerignore
-├── .gitignore
-├── Dockerfile
-├── README.md
-├── requirements.txt
-├── .astro/
-│   └── config.yaml
-├── dags/
-│   └── uber_etl_dag.py
-├── dbt/
-│   ├── dbt_project.yml
-│   ├── models/
+├── .github/                      # GitHub Actions CI/CD workflows
+│   └── workflows/
+│       └── ci.yml                # CI pipeline for dbt project
+├── dags/                         # Apache Airflow DAGs
+│   └── uber_etl_dag.py           # Main ETL orchestration DAG
+├── dbt/                          # dbt project for data transformation
+│   ├── models/                   # dbt models (staging, marts)
 │   │   ├── marts/
-│   │   │   ├── bi/
-│   │   │   └── core/
-│   │   └── staging/
-│   ├── seeds/
-│   └── ...
-├── include/
+│   │   │   ├── bi/               # Business intelligence models
+│   │   │   └── core/             # Core fact and dimension models
+│   │   └── staging/              # Staging models from raw data
+│   ├── seeds/                    # Seed data (e.g., lookup tables)
+│   └── tests/                    # dbt data quality tests
+├── include/                      # Python scripts for Airflow tasks
 │   ├── check_for_new_data.py
 │   ├── download_data.py
 │   ├── get_data_into_raw_table.py
 │   └── upload_data.py
-└── ...
+├── .astro/                       # Astro CLI configuration for Airflow
+├── Dockerfile                    # Docker configuration for environment
+├── packages.txt                  # OS-level dependencies for Docker
+├── requirements.txt              # Python dependencies
+└── README.md                     # Project overview and documentation
 ```
 
 ## Getting Started
 
 ### Prerequisites
 
-- [dbt](https://docs.getdbt.com/docs/installation)
-- [Docker](https://docs.docker.com/get-docker/)
-- [Astro CLI](https://docs.astronomer.io/astro/cli/install-cli)
-- [Snowflake Account](https://www.snowflake.com/)
-- Python 3.x
+Ensure you have the following installed and configured:
+
+-   **dbt Core**: Follow the [dbt installation guide](https://docs.getdbt.com/docs/installation).
+-   **Docker**: Required for running the Airflow environment locally via Astro CLI. [Get Docker](https://docs.docker.com/get-docker/).
+-   **Astro CLI**: For local Airflow development and orchestration. [Install Astro CLI](https://docs.astronomer.io/astro/cli/install-cli).
+-   **Snowflake Account**: Access to a Snowflake data warehouse is essential.
+-   **Python 3.x**: Recommended version 3.9 or higher.
 
 ### Setup
 
@@ -60,65 +66,98 @@ uber_etl_pipeline/
     cd Uber-Trips-ETL-Pipeline-and-Analysis
     ```
 
-2.  **Install dependencies:**
+2.  **Install Python dependencies:**
 
     ```bash
     pip install -r requirements.txt
-    dbt deps
     ```
 
-3.  **Set up Snowflake credentials:**
-    Create the .env file and set the following environment variables with your Snowflake account details:
+3.  **Install dbt project dependencies:**
+
+    Navigate to the `dbt` directory and install necessary packages:
+
     ```bash
-    SNOWFLAKE_ACCOUNT=
-    SNOWFLAKE_USER=
-    SNOWFLAKE_PASSWORD=
-    SNOWFLAKE_ROLE=
-    SNOWFLAKE_WAREHOUSE=
-    SNOWFLAKE_DATABASE=
-    SNOWFLAKE_SCHEMA=<schema_where_the_internal_file_stage_is_located>
-    SNOWFLAKE_STAGE=<name_of_the_internal_stage_for_data_upload>
-    SNOWFLAKE_FILE_FORMAT=<parquet_file_format>
-    DATA_YEAR_RANGE=<year_range_to_download_data> # e.g. (2020-2026)
+    cd dbt
+    dbt deps
+    cd ..
     ```
 
-### Running the Pipeline with Airflow
+4.  **Configure Snowflake credentials and environment variables:**
 
-The ETL pipeline is orchestrated using the `uber_etl_dag` Airflow DAG. To run the pipeline, you need to start the Airflow environment using the Astro CLI from the root of the project.
+    Create a `.env` file in the project root with your Snowflake connection details and other configurations. Refer to the `requirements.txt` for specific variable names.
+
+    ```bash
+    SNOWFLAKE_ACCOUNT=your_snowflake_account_identifier
+    SNOWFLAKE_USER=your_snowflake_username
+    SNOWFLAKE_PASSWORD=your_snowflake_password
+    SNOWFLAKE_ROLE=your_snowflake_role
+    SNOWFLAKE_WAREHOUSE=your_snowflake_warehouse
+    SNOWFLAKE_DATABASE=your_snowflake_database
+    SNOWFLAKE_SCHEMA=your_raw_data_schema # e.g., RAW
+    SNOWFLAKE_STAGE=your_internal_stage_name # e.g., UBER_TRIPS_STAGE
+    SNOWFLAKE_FILE_FORMAT=your_parquet_file_format # e.g., PARQUET_FILE_FORMAT
+    DATA_YEAR_RANGE=2022-2024 # The range of years for which to download data (e.g., 2022-2024)
+    ```
+    *(Ensure these variables match your Snowflake setup and the dbt `profiles.yml` configuration.)*
+
+### Running the Pipeline with Airflow (Local)
+
+The ETL pipeline is orchestrated by the `uber_etl_dag` Airflow DAG. To run it locally using the Astro CLI:
+
+![Airflow DAG](Images/airflow_dag.svg)
 
 1.  **Start the Airflow environment:**
+
+    From the root of your project, execute:
 
     ```bash
     astro dev start
     ```
+    This command builds Docker images and starts Airflow components (scheduler, webserver, worker, PostgreSQL, Redis).
 
 2.  **Access the Airflow UI:**
 
-    Open your browser and navigate to `http://localhost:8080`.
+    Open your web browser and navigate to `http://localhost:8080`. Log in with `admin:admin`.
 
-3.  **Trigger the DAG:**
+3.  **Unpause and Trigger the DAG:**
 
-    In the Airflow UI, you will see the `uber_etl_dag`. You can trigger it manually to run the pipeline.
+    In the Airflow UI, locate the `uber_etl_dag`. Toggle it "On" (unpause) and then manually trigger it to start the ETL process.
 
-## Data Models
+## Data Models (dbt)
 
-The dbt models transform the raw Uber trip data into a structured format for analysis. The main models are:
+The dbt project transforms raw Uber trip data into a structured, query-optimized format. Key models include:
 
-- **`stg_uber_trips`**: Cleans and prepares the raw trip data from the Snowflake stage.
-- **`fact_trips`**: An incremental fact table containing detailed trip information.
-- **`dim_datetime`**: A dimension table for time-based analysis.
-- **`dim_location`**: A dimension table for location-based analysis.
-- **`dim_trip_flags`**: A dimension table for payment-related flags.
+-   **`stg_uber_trips`**: Staging model that cleans, standardizes, and performs initial transformations on the raw Uber trip data ingested from Snowflake's internal stage.
+-   **`fact_trips`**: An incremental fact table containing granular trip details. This model is designed to efficiently add new trip records over time.
+-   **`dim_datetime`**: A conformed dimension table providing comprehensive date and time attributes, enabling flexible time-based analysis.
+-   **`dim_location`**: A dimension table for detailed location information, including taxi zones, allowing for geographical analysis of trips.
+-   **`dim_trip_flags`**: A dimension table encapsulating various flags and attributes related to trip characteristics or payment types, facilitating deeper analytical segmentation.
 
-## CI/CD Pipeline
 
-The project includes a GitHub Actions workflow in `.github/workflows/ci.yml` that automates the testing of the dbt project on push to the `main` branch.
+## CI/CD Pipeline (GitHub Actions)
 
-This workflow uses a "slim CI" approach. It intelligently compares the changes in the pull request against the `main` branch to identify only the dbt models that have been modified. It then runs `dbt build` on just those modified models and their downstream dependencies. This significantly speeds up CI runs by avoiding the need to build and test the entire dbt project on every change.
+The project includes a robust CI/CD pipeline defined in `.github/workflows/ci.yml`. This workflow automates the testing and validation of the dbt project whenever changes are pushed to the `main` branch or a pull request is opened.
+
+**Slim CI Approach**: The pipeline utilizes a "slim CI" methodology. Instead of rebuilding and testing the entire dbt project on every change, it intelligently identifies only the dbt models that have been modified (or their upstream/downstream dependencies) compared to the `main` branch. This significantly reduces CI run times, provides faster feedback to developers, and optimizes resource consumption.
+
+## Metabase Dashboards
+
+![Monthly Overview & Trends](Images/Monthly%20overview%20and%20trends.png)
+
+![Peak Hour & Demand](Images/Peak%20Hour%20and%20Demand.png)
+
+![Driver Economics & Shared Rides](Images/Driver%20Economics%20and%20Shared%20Rides.png)
 
 ## Data Sources
 
-The pipeline uses the following data sources:
+The ETL pipeline processes data from the following public sources:
 
-- **Uber Trip Data**: Parquet files containing Uber trip data, downloaded from the [TLC Trip Record Data](https://www.nyc.gov/site/tlc/about/tlc-trip-record-data.page) website.
-- **Taxi Zone Lookup**: A CSV file containing a lookup table for taxi zones, downloaded from the [TLC Trip Record Data](https://www.nyc.gov/site/tlc/about/tlc-trip-record-data.page) website.
+-   **Uber Trip Data**: Monthly Parquet files containing high-volume for-hire vehicle (HVFHV) trip records provided by the NYC Taxi & Limousine Commission (TLC). Data is sourced from the [TLC Trip Record Data](https://www.nyc.gov/site/tlc/about/tlc-trip-record-data.page) website.
+-   **Taxi Zone Lookup Data**: A supplementary CSV file providing a lookup table for NYC taxi zones, also available from the [TLC Trip Record Data](https://www.nyc.gov/site/tlc/about/tlc-trip-record-data.page) website. This data is used to enrich location-based analysis.
+
+## Future Enhancements
+
+-   Implement data quality alerts and notifications.
+-   Explore integration with a data visualization tool (e.g., Tableau, Power BI) for direct reporting.
+-   Expand dbt models to include more complex analytics (e.g., surge pricing analysis, driver efficiency).
+-   Migrate to a more robust secrets management solution for production deployments.
