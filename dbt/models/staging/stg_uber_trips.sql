@@ -8,7 +8,7 @@
 
 {% if is_incremental() %}
 with max_ingestion as (
-  select max(ingestion_ts) as max_ingestion_ts from [{ this }]
+  select max(ingestion_ts) as max_ingestion_ts from {{ this }}
 )
 {% endif %}
 select
