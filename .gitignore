@@ -15,6 +15,7 @@ dbt_packages/
 logs/
 data/
 
+.user.yml
 package-lock.yml
-
+ 
 GEMINI.md

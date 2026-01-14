@@ -27,5 +27,5 @@ select
       ['shared_request_flag', 'shared_match_flag', 'access_a_ride_flag', 'wav_request_flag', 'wav_match_flag']) }} as trip_flags_id
 from {{ ref('stg_uber_trips') }}
 {% if is_incremental() %}
-where ingestion_ts > (select max(ingestion_ts) from {{ ref('stg_uber_trips') }})
+where trip_id not in (select trip_id from {{ this }})
 {% endif %}
