@@ -50,7 +50,7 @@ def main():
             # --- Setup: Create Table ---
             logging.info("-- Setting up Snowflake objects --")
             create_table_sql = f"""
-            CREATE  TABLE IF NOT EXISTS {TABLE_NAME} (
+            CREATE TABLE IF NOT EXISTS {TABLE_NAME} (
                 hvfhs_license_num VARCHAR(6),
                 request_datetime TIMESTAMP_NTZ,
                 on_scene_datetime TIMESTAMP_NTZ,
@@ -68,7 +68,7 @@ def main():
                 airport_fee FLOAT,
                 tips FLOAT,
                 driver_pay FLOAT,
-                cbd_congestion_fee FLOAT DEFAULT 0.0,
+                cbd_congestion_fee FLOAT DEFAULT 0,
                 shared_request_flag BOOLEAN,
                 shared_match_flag BOOLEAN,
                 access_a_ride_flag BOOLEAN,

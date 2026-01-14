@@ -43,7 +43,7 @@ select
   ingestion_ts
 from {{ source('raw', 'FHV_TRIPS') }}
 {% if is_incremental() %}
-join max_ingestion on ingestion_ts = max_ingestion_ts 
+join max_ingestion on ingestion_ts > max_ingestion_ts 
 {% endif %}
 where hvfhs_license_num = 'HV0003' -- Uber HVFHS
   and pickup_datetime is not null 
